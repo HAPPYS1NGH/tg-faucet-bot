@@ -9,7 +9,8 @@ export class Bot {
     }
 
     public start() {
-        this.bot.start(this.handleBotStart);
+        this.bot.start(this.handleBotStart.bind(this));
+        this.bot.command('menu', this.handleMenuCommand.bind(this));
         this.bot.launch();
         this.handleBotLaunch();
     }
@@ -22,14 +23,58 @@ export class Bot {
     }
 
     private handleBotStart(ctx: Context) {
+        ctx.reply(`GM Developers🌅 \n Let's get you the faucet you want.\n`, {
+            reply_markup: {
+                keyboard: [
+                    [
+                        { text: "🚀 Get Started" },
+                        { text: "ℹ️ Info" },
+                    ]
+                ],
+                resize_keyboard: true,
+                one_time_keyboard: true
+            }
+        });
+    }
+
+    private handleMenuCommand(ctx: Context) {
+        ctx.reply("📋 Menu:", {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: "Get Started", callback_data: 'get_started' },
+                        { text: "Info", callback_data: 'info' }
+                    ]
+                ]
+            }
+        });
+    }
+
+    private handleBotLaunch() {
+        console.log("Bot is up and running...");
+
+        this.bot.on('text', (ctx) => {
+
+            if (ctx.message.text === "🚀 Get Started") {
+                this.handleGetStarted(ctx);
+            } else if (ctx.message.text === "ℹ️ Info") {
+                this.handleInfo(ctx);
+            }
+        });
+
+        this.bot.action('get_started', (ctx) => this.handleGetStarted(ctx));
+        this.bot.action('info', (ctx) => this.handleInfo(ctx));
+    }
+
+    private handleGetStarted(ctx: Context) {
         const webLink = Config.TELE_BOT_WEB_LINK;
 
-        ctx.reply("Hi! Let's get you started. Click the button below:", {
+        ctx.reply("Click the button below to get started:", {
             reply_markup: {
                 inline_keyboard: [
                     [
                         {
-                            text: "Get Started",
+                            text: "🚀 Get Started",
                             web_app: {
                                 url: webLink,
                             },
@@ -40,7 +85,7 @@ export class Bot {
         });
     }
 
-    private handleBotLaunch() {
-        console.log("Bot is up and running...");
+    private handleInfo(ctx: Context) {
+        ctx.reply("ℹ️ This bot helps you get Faucet on Arbitrum Sepolia. Connect the wallet and start using.");
     }
 }
